@@ -90,13 +90,13 @@ GET /
 
 Retorna uma página HTML com informações da API
 
-### 📄 Listar Idosos
+### 📄 Listar Paciente
 
 ```
 GET /pacientes
 ```
 
-### 🔍 Buscar idosos (id)
+### 🔍 Buscar Paciente (id)
 
 ```
 GET /paciente/:id
