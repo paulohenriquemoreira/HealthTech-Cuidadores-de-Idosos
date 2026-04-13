@@ -31,7 +31,7 @@
 
 Siga os passos abaixo para rodar a aplicação localmente:
 
-1. **Clone esse repositório:**
+**1º Clone esse repositório:**
 
    ```
    git clone https://github.com/paulohenriquemoreira/HealthTech-Cuidadores-de-Idosos
@@ -39,7 +39,7 @@ Siga os passos abaixo para rodar a aplicação localmente:
    cd HealthTech-Cuidadores-de-Idosos
    ```
 
-2. **Instale as dependências:**
+**2º Instale as dependências:**
 
    ```
    npm install
@@ -48,7 +48,7 @@ Siga os passos abaixo para rodar a aplicação localmente:
    npm sqlite
    ```
 
-3. **Inicie o servidor de desenvolvimento:**
+**3º Inicie o servidor de desenvolvimento:**
 
    ```
    npm run dev
