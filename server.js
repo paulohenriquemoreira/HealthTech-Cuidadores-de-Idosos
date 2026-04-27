@@ -186,9 +186,13 @@ app.delete("/pacientes/:id", async (req, res) => {
   }
 });
 
+
+
 // ======================================
 // PORTA (RENDER FRIENDLY)
 // ======================================
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

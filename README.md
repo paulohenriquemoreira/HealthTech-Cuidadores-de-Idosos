@@ -87,7 +87,6 @@ paciente.db
 ```
 GET /
 ```
-
 Retorna uma página HTML com informações da API
 
 ### 📄 Listar Paciente

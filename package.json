@@ -12,7 +12,7 @@
     "start": "node server.js",
     "postinstall": "npm rebuild sqlite3"
   },
-    "keywords": [],
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",

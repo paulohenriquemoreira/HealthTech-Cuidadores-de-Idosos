@@ -68,6 +68,7 @@ async function inserirPaciente(paciente) {
     `INSERT INTO paciente 
     (nome, idade, descricao, estado_saude, autonomia, medicamentos, alergias, data_atendimento, endereco_residencia, contato_emergencia)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    
     [
       nome,
       idade,
@@ -80,6 +81,7 @@ async function inserirPaciente(paciente) {
       endereco_residencia,
       contato_emergencia,
     ]
+    
   );
 }
 
