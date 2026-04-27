@@ -51,8 +51,8 @@ Siga os passos abaixo para rodar a aplicação localmente:
 **3º Inicie o servidor de desenvolvimento:**
 
    ```
-   npm run dev
-   **Acesse a aplicação no navegador:** http://localhost:3000/
+   node serve.js
+   **Servidor rodando na porta http:localhost:3000
    ```
 
 ## 🗄️ Banco de Dados

@@ -1,104 +1,196 @@
-//Importar o framework express
-const express = require('express');
+const express = require("express");
+const { conectar, inicializarBanco } = require("./database");
 
-//Criando a aplicação (servidor)
 const app = express();
 
-//Configura o express para entender os dados enviados no formato JSON.
+// Middleware
 app.use(express.json());
 
-//Rota principal (/)
+// ======================================
+// INICIALIZAÇÃO DO BANCO
+// ======================================
+(async () => {
+  try {
+    await inicializarBanco();
+    console.log("✅ Banco inicializado com sucesso");
+  } catch (error) {
+    console.error("❌ Erro ao inicializar banco:", error);
+  }
+})();
+
+// ======================================
+// ROTA RAIZ (HEALTH CHECK)
+// ======================================
 app.get("/", (req, res) => {
-
-    res.send(`
-        <body>
-            <h1>HealthTech (Cuidadores de Idosos)</h1>
-            <h2>Rotina Fragmentada de Atendimento Individual a Idosos</h2>
-            <p> Endpoint que leva aos pacientes cadastrados: /pacientes</p>
-        </body>
-    `)
-
+  res.send("🚀 API de pacientes rodando com sucesso!");
 });
 
+// ======================================
+// GET - LISTAR PACIENTES
+// ======================================
+app.get("/pacientes", async (req, res) => {
+  try {
+    const db = await conectar();
+    const pacientes = await db.all("SELECT * FROM paciente");
+    res.json(pacientes);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
 
-const PORT = 3000;
+// ======================================
+// GET - PACIENTE POR ID
+// ======================================
+app.get("/pacientes/:id", async (req, res) => {
+  try {
+    const db = await conectar();
+    const paciente = await db.get(
+      "SELECT * FROM paciente WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (!paciente) {
+      return res.status(404).json({ erro: "Paciente não encontrado" });
+    }
+
+    res.json(paciente);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ======================================
+// POST - CRIAR PACIENTE
+// ======================================
+app.post("/pacientes", async (req, res) => {
+  try {
+    const {
+      nome,
+      idade,
+      descricao,
+      estado_saude,
+      autonomia,
+      medicamentos,
+      alergias,
+      data_atendimento,
+      endereco_residencia,
+      contato_emergencia,
+    } = req.body;
+
+    const db = await conectar();
+
+    const result = await db.run(
+      `INSERT INTO paciente 
+      (nome, idade, descricao, estado_saude, autonomia, medicamentos, alergias, data_atendimento, endereco_residencia, contato_emergencia)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        nome,
+        idade,
+        descricao,
+        estado_saude,
+        autonomia,
+        medicamentos,
+        alergias,
+        data_atendimento,
+        endereco_residencia,
+        contato_emergencia,
+      ]
+    );
+
+    res.status(201).json({
+      mensagem: "Paciente criado com sucesso",
+      id: result.lastID,
+    });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ======================================
+// PUT - ATUALIZAR PACIENTE
+// ======================================
+app.put("/pacientes/:id", async (req, res) => {
+  try {
+    const {
+      nome,
+      idade,
+      descricao,
+      estado_saude,
+      autonomia,
+      medicamentos,
+      alergias,
+      data_atendimento,
+      endereco_residencia,
+      contato_emergencia,
+    } = req.body;
+
+    const db = await conectar();
+
+    const result = await db.run(
+      `UPDATE paciente SET 
+        nome = ?, 
+        idade = ?, 
+        descricao = ?, 
+        estado_saude = ?, 
+        autonomia = ?, 
+        medicamentos = ?, 
+        alergias = ?, 
+        data_atendimento = ?, 
+        endereco_residencia = ?, 
+        contato_emergencia = ?
+      WHERE id = ?`,
+      [
+        nome,
+        idade,
+        descricao,
+        estado_saude,
+        autonomia,
+        medicamentos,
+        alergias,
+        data_atendimento,
+        endereco_residencia,
+        contato_emergencia,
+        req.params.id,
+      ]
+    );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ erro: "Paciente não encontrado" });
+    }
+
+    res.json({ mensagem: "Paciente atualizado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ======================================
+// DELETE - REMOVER PACIENTE
+// ======================================
+app.delete("/pacientes/:id", async (req, res) => {
+  try {
+    const db = await conectar();
+
+    const result = await db.run(
+      "DELETE FROM paciente WHERE id = ?",
+      [req.params.id]
+    );
+
+    if (result.changes === 0) {
+      return res.status(404).json({ erro: "Paciente não encontrado" });
+    }
+
+    res.json({ mensagem: "Paciente removido com sucesso" });
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+});
+
+// ======================================
+// PORTA (RENDER FRIENDLY)
+// ======================================
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    
-    console.log(`Servidor rodando na porta http:localhost:${PORT}`);
-    
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
-
-//Rota de Pacientes
-
-
-const listaPacientes = [
-    {
-        id:1,
-        nome:"João Roberto",
-        idade:"55 anos",
-        descricao:"Foi medicado corretamente,paciente teve um dia calmo com leitura.",
-        estado_saude:"Houve uma melhora referente aos picos de pressão arterial",
-        autonomia:"Se alimentou e fez atividades sem auxílio.",
-        medicamentos:"Sinvastatina (20:00, 20mg, para Colesterol Alto) e Losartana (08:00, 50mg, para Hipertensão)",
-        alergias:"Penicilina",
-        data_atendimento:"06/04/2026",
-        endereco_residencia:"Rua das Flores, 123 - Centro",
-        contato_emergencia:"(11) 98765-4321",
-    },
-    {
-        id:2,
-        nome:"Ana Castela",
-        idade:"67 anos",
-        descricao:"Foi medicada no horário,paciente teve um dia sem intercorrências.",
-        estado_saude:"Demonstrou piora no quadro de Alzheimer.",
-        autonomia:"Se alimentou e fez atividades sem auxílio.",
-        medicamentos:"Donepezila (22:00, 10mg, para Alzheimer)",
-        alergias:"Ácido Acetilsalicílico (Aspirina)",
-        data_atendimento:"07/04/2026",
-        endereco_residencia:"Av. Brasil, 1500 - Jardim América",
-        contato_emergencia:"(11) 93322-1144",
-    }
-]
-
-
-app.get("/pacientes", (req, res) => {
-  
-    res.json(listaPacientes);
-
-});
-
-//Parâmetros de Rota de Pacientes
-app.get("/pacientes/:id", (req, res) => {
-
-    const idPegoURL = Number(req.params.id);
-    const pacienteEncontrado = listaPacientes.find((listaPacientes) => listaPacientes.id === idPegoURL);
-
-    res.json(pacienteEncontrado);
-
-});
-
-
-//Rota de Novos Pacientes (Verbo POST)
-
-app.post("/pacientes",(req, res) => {
-
-  const novoPaciente = {
-    id: listaPacientes.length + 1,
-    nome: req.body.nome,
-    idade:req.body.idade,
-    descricao:req.body.descricao,
-    estado_saude:req.body.estado_saude,
-    autonomia:req.body.autonomia,
-    medicamentos:req.body.medicamentos,
-    alergias:req.body.alergias,
-    data_atendimento:req.body.data_atendimento,
-    endereco_residencia:req.body.endereco_residencia,
-    contato_emergencia:req.body.contato_emergencia,
-  };
-
-  listaPacientes.push(novoPaciente);
-  res.send(`Paciente ${novoPaciente.nome} cadastrado com sucesso!`);
-});
-
-
